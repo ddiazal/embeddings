@@ -66,7 +66,7 @@ class SemanticSearch:
     def create_embedding(self, texts: list | str)->list[Any]:
         response = self.__client.embeddings.create(
             model="text-embedding-3-small"
-            ,inputs=texts,
+            ,input=texts
         )
         response_json = response.model_dump()
         return [response_data["embedding"] for response_data in response_json["data"]]
