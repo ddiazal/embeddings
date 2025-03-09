@@ -69,7 +69,7 @@ class SemanticSearch:
 
     def create_embedding(self, texts: list | str)->list[Any]:
         """
-        
+
         :param texts:
         :return:
         """
