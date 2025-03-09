@@ -20,18 +20,28 @@ from scipy.spatial import distance
 emb_client = OpenAI()
 class SemanticSearch:
     def __init__(self, client):
-        self.client = client
+        self.__client = client
         self.dataframe = None
 
-    def __call__(self, data_file:str, query:str):
-        self.dataframe = read_csv(data_file)
-
-        data = self._fetch_into_json()
+    def __call__(self, data_file:str, query:str, file_type: str = "csv"):
+        if file_type == "csv":
+            self.dataframe: DataFrame = read_csv(data_file)
+            data = self._fetch_into_json()
+        else:
+            with open(data_file) as f:
+                data = json.load(f)
 
         data_texts: list[str] = [self.create_data_texts(data_dict=d) for d in data]
-        data_embeddings: list[str] = self.create_embedding(texts=data_texts)[0]
+        data_embeddings: list[float] = self.create_embedding(texts=data_texts)[0]
 
-        query_embeddings = self.create_embedding(texts=query)[0]
+        query_embeddings: list[float] = self.create_embedding(texts=query)[0]
+
+        hits = self.find_closest_n(query_embeddings, data_embeddings, n=3)
+        sem_search: list = []
+        for hit in hits:
+            sem_search.append(data[hit["index"]])
+
+        return sem_search
 
     def _fetch_into_json(self) -> list[dict[str, Any]]:
         json_data = self.dataframe.to_json(orient='records')
@@ -52,7 +62,7 @@ class SemanticSearch:
 
 
     def create_embedding(self, texts: list | str)->list[Any]:
-        response = self.client.embeddings.create(
+        response = self.__client.embeddings.create(
             model="text-embedding-3-small"
             ,inputs=texts,
         )
@@ -61,7 +71,7 @@ class SemanticSearch:
 
 
     @staticmethod
-    def find_closest_n(query_vector: np.ndarray, embeddings: np.ndarray, n:int)->list[dict[str, Any]]:
+    def find_closest_n(query_vector: list[float], embeddings: list[float], n:int)->list[dict[str, Any]]:
         distances: list[dict[str, Any]] = []
         for index, embedding in enumerate(embeddings):
             dist = distance.cosine(query_vector, embedding)
