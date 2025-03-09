@@ -16,10 +16,12 @@ from scipy.spatial import distance
 # 2 - Define "create_texts" static method for this particular case
 # 3 - Define "create embeddings" instance method
 # 4 - Define "find closest n" static method
-
-emb_client = OpenAI()
+SECRET_KEY: str = os.getenv("OPI_OPENAI_API_KEY")
+emb_client = OpenAI(
+    api_key=SECRET_KEY,
+)
 class SemanticSearch:
-    def __init__(self, client):
+    def __init__(self, client = emb_client):
         self.__client = client
         self.dataframe = None
 
