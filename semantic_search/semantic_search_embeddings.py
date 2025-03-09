@@ -5,10 +5,12 @@ from typing import Any
 from openai import OpenAI
 from pandas import read_csv
 from pandas import DataFrame
+from operator import itemgetter
 from scipy.spatial import distance
 
 # Pseudocode:
 # 1 - Create a Semantic Search class
+# 2 - Define "fetch into json" instance method
 # 2 - Define "create_texts" static method for this particular case
 # 3 - Define "create embeddings" instance method
 # 4 - Define "find closest n" static method
@@ -18,3 +20,17 @@ class SemanticSearch:
     def __init__(self, client):
         self.client = client
         self.dataframe = None
+
+    def __call__(self, data_file:str, query:str):
+        self.dataframe = read_csv(data_file)
+
+        data = self._fetch_into_json()
+
+    def _fetch_into_json(self) -> list[dict[str, Any]]:
+        json_data = self.dataframe.to_json(orient='records')
+        data:list[dict[str, Any]] = json.loads(json_data)
+        return data
+
+    @staticmethod
+    def create_data_texts(data_dict: dict[str, Any]) -> str:
+        (title, listed_in, description) =
