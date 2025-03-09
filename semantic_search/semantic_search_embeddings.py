@@ -40,7 +40,8 @@ class SemanticSearch:
         hits = self.find_closest_n(query_embeddings, data_embeddings, n=3)
         sem_search: list = []
         for hit in hits:
-            sem_search.append(data[hit["index"]])
+            product = data[hit["index"]]
+            sem_search.append(product["title"])
 
         return sem_search
 
