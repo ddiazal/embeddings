@@ -3,7 +3,6 @@ import json
 
 from typing import Any
 
-import numpy as np
 from openai import OpenAI
 from pandas import read_csv
 from pandas import DataFrame
