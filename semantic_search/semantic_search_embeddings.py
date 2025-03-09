@@ -51,6 +51,11 @@ class SemanticSearch:
 
     @staticmethod
     def create_data_texts(data_dict: dict[str, Any]) -> str:
+        """
+
+        :param data_dict:
+        :return:
+        """
         (title,
          short_description,
          features) = itemgetter(
@@ -63,6 +68,11 @@ class SemanticSearch:
 
 
     def create_embedding(self, texts: list | str)->list[Any]:
+        """
+        
+        :param texts:
+        :return:
+        """
         response = self.__client.embeddings.create(
             model="text-embedding-3-small"
             ,input=texts
@@ -73,9 +83,20 @@ class SemanticSearch:
 
     @staticmethod
     def find_closest_n(query_vector: list[float], embeddings: list[float], n:int)->list[dict[str, Any]]:
+        """
+
+        :param query_vector:
+        :param embeddings:
+        :param n:
+        :return:
+        """
         distances: list[dict[str, Any]] = []
         for index, embedding in enumerate(embeddings):
+            # Calculate the cosine distance between the query vector and embedding
             dist = distance.cosine(query_vector, embedding)
+            # Append the distance and index to distances
             distances.append({"index": index, "distance": dist})
+        # Sort distances by the distance key
         sorted_distances = sorted(distances, key=lambda d: d["distance"])
+        # Return the first n elements in distances_sorted
         return sorted_distances[:n]
