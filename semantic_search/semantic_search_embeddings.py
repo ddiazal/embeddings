@@ -26,6 +26,11 @@ class SemanticSearch:
 
         data = self._fetch_into_json()
 
+        data_texts: list[str] = [self.create_data_texts(data_dict=d) for d in data]
+        data_embeddings: list[str] = self.create_embedding(texts=data_texts)[0]
+
+        query_embeddings = self.create_embedding(texts=query)
+
     def _fetch_into_json(self) -> list[dict[str, Any]]:
         json_data = self.dataframe.to_json(orient='records')
         data:list[dict[str, Any]] = json.loads(json_data)
@@ -33,4 +38,21 @@ class SemanticSearch:
 
     @staticmethod
     def create_data_texts(data_dict: dict[str, Any]) -> str:
-        (title, listed_in, description) =
+        (title,
+         short_description,
+         features) = itemgetter(
+            'title',
+            'short_description',
+            'features')(data_dict)
+        return f"""Title: {title}
+        Description: {short_description}
+        Features: {', '.join(features)}"""
+
+
+    def create_embedding(self, texts: list | str)->list[Any]:
+        response = self.client.embeddings.create(
+            model="text-embedding-3-small"
+            ,inputs=texts,
+        )
+        response_json = response.model_dump()
+        return [response_data["embedding"] for response_data in response_json["data"]]
