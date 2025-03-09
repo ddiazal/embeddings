@@ -2,6 +2,8 @@ import os
 import json
 
 from typing import Any
+
+import numpy as np
 from openai import OpenAI
 from pandas import read_csv
 from pandas import DataFrame
@@ -29,7 +31,7 @@ class SemanticSearch:
         data_texts: list[str] = [self.create_data_texts(data_dict=d) for d in data]
         data_embeddings: list[str] = self.create_embedding(texts=data_texts)[0]
 
-        query_embeddings = self.create_embedding(texts=query)
+        query_embeddings = self.create_embedding(texts=query)[0]
 
     def _fetch_into_json(self) -> list[dict[str, Any]]:
         json_data = self.dataframe.to_json(orient='records')
@@ -56,3 +58,13 @@ class SemanticSearch:
         )
         response_json = response.model_dump()
         return [response_data["embedding"] for response_data in response_json["data"]]
+
+
+    @staticmethod
+    def find_closest_n(query_vector: np.ndarray, embeddings: np.ndarray, n:int)->list[dict[str, Any]]:
+        distances: list[dict[str, Any]] = []
+        for index, embedding in enumerate(embeddings):
+            dist = distance.cosine(query_vector, embedding)
+            distances.append({"index": index, "distance": dist})
+        sorted_distances = sorted(distances, key=lambda d: d["distance"])
+        return sorted_distances[:n]
